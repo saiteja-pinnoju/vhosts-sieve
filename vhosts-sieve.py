@@ -246,11 +246,12 @@ class DomainsResolver(object):
     def get_result(self):
         ips = []
         try:
-            for rr in dns.resolver.query(self._domain, 'A'):
+            answers = dns.resolver.resolve(self._domain, 'A')
+            for rr in answers:
                 ip = str(rr)
                 if not ipaddress.ip_address(ip).is_private:
                     ips.append(ip)
-        except dns.exception.DNSException:
+        except (dns.exception.DNSException, socket.gaierror):
             pass
         ProgressTracker.instance().done()
         result = {
@@ -259,6 +260,7 @@ class DomainsResolver(object):
         }
         Logger.verbose(result)
         return result
+
 
 
 class GetAddrInfoWrapper(object):
